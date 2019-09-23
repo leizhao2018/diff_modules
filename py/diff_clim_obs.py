@@ -3,7 +3,7 @@ Created on Mon Apr 29 13:09:10 2019
 
 @author: leizhao
 """
-import pickle
+import json
 import sys
 import numpy as np
 from datetime import datetime,timedelta
@@ -59,6 +59,7 @@ def avg_time(times):
     start_time=datetime(2018,1,1,0,0,0)
     avg=timedelta(days=0)
     for elem in times:
+        elem=datetime.strptime(elem,'%Y-%m-%d %H:%M:%S')
         avg+=(elem-start_time)
     avg=avg/len(times)
     avg_time=start_time+avg
@@ -129,7 +130,10 @@ def all_boat_map(df,path_save,telemetrystatus_df):
             mark_color='red'
         else:
             mark_color='blue'
-        popups='<h3> Vessel_'+str(telemetrystatus_df['Vessel#'][str(df['name'][i])])+'</h3><br><body>Average for '+month(int(start_t.strftime('%m')))+' '+str(start_t.strftime('%d'))\
+        vessel=telemetrystatus_df['Vessel#'][str(df['name'][i])]
+        
+                                          
+        popups='<h3> Vessel_'+str(vessel)+'</h3><br><body>Average for '+month(int(start_t.strftime('%m')))+' '+str(start_t.strftime('%d'))\
                                                      +' to '+month(int(end_t.strftime('%m')))+' '+str(end_t.strftime('%d'))+'&nbsp;'+df['time'][i].strftime('%Y')+'<br>Observed temperature:'+\
                                                      str(round(C2F(df['obstemp'][i]),1))+'°F ('+str(round(df['obstemp'][i],1))+'°C)'+'<br>Historical temperature:'+\
                                                      str(round(C2F(df['climtemp'][i]),1))+'°F ('+str(round(df['climtemp'][i],1))+'°C)'+'<br>N='+str(round(df['number'][i],2))+'<body>'
@@ -227,9 +231,11 @@ def week_start_end(dtime,interval=0):
     end_time=datetime(2003,1,1,0,0)+timedelta(weeks=count+1)   
     return start_time,end_time    
 
-def main():
+#def main():
+a=1
+if a==1:
     #hardcode
-    filepathread='/home/jmanning/leizhao/programe/diff_modules/result/data_dict/dict_obsdpogmf0529.p'
+    filepathread='/home/jmanning/leizhao/programe/aqmain/dictionary/dictionary.json'
     path_save='/home/jmanning/leizhao/programe/diff_modules/result/differentmap/'
     telemetry_status='/home/jmanning/leizhao/programe/diff_modules/parameter/telemetry_status.csv'
     end_time=datetime.now()
@@ -237,8 +243,10 @@ def main():
     start_time,end_time=week_start_end(end_time,interval=1) #the interval=1, menas the week is the last week of this time.
     ####
     try:
-        with open(filepathread,'rb') as fp:
-            dictt = pickle.load(fp)
+        with open(filepathread,'r') as fp:
+            dictt=json.load(fp)
+#        with open(filepathread,'rb') as fp:
+#            dictt = pickle.load(fp)
     except KeyboardInterrupt:
         sys.exit()
     except:
@@ -247,12 +255,22 @@ def main():
     telemetrystatus_df.index=telemetrystatus_df['Boat']
 
     mlist=[]
-    for i in dictt['tele_dict'].keys():
-        tele_df=check_time(dictt['tele_dict'][i],start_time,end_time,time_header='time')
-        CrmClim_df=check_time(dictt['CrmClim'][i],start_time,end_time,time_header='time').dropna()
+    for name in dictt.keys():
+        if name=='end_time':
+            continue
+#        tele_df=check_time(dictt['tele_dict'][i],start_time,end_time,time_header='time')
+#        CrmClim_df=check_time(dictt['CrmClim'][i],start_time,end_time,time_header='time').dropna()
+        
+        df=pd.DataFrame.from_dict(dictt[name])
+        df['time']=df.index
+        tele_df=df[['time','lat','lon','observation_T', 'observation_H']]
+        tele_df.rename(columns={'observation_T':'temp','observation_H':'depth'},inplace=True)
+        df['time']=df.index
+        CrmClim_df=df[['time','lat','lon','Clim_T', 'NGDC_H']]
+        CrmClim_df.rename(columns={'Clim_T':'temp','NGDC_H':'depth'},inplace=True)
         if len(CrmClim_df)==0:
             continue
-        tele_list=[i,avg_time(tele_df['time']),np.mean(tele_df['lon']),np.mean(tele_df['lat']),np.mean(tele_df['temp'])]
+        tele_list=[name,avg_time(tele_df['time']),np.mean(tele_df['lon']),np.mean(tele_df['lat']),np.mean(tele_df['temp'])]
         if len(CrmClim_df)!=0:
             CrmClim_diff= diff(tele_df,CrmClim_df)        
             mlist.append(tele_list+CrmClim_diff+[len(CrmClim_df)])
@@ -264,5 +282,4 @@ def main():
 #    for i in df.index:
 #        per_boat_map(df.iloc[i],path_save,dpi=300) 
 #        
-    
         
