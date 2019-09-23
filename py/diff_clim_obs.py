@@ -21,16 +21,29 @@ import pandas as pd
 import folium
 
 #import numpy as np # linear algebra
-def check_time(df,start_time,end_time,time_header='time'):
-    '''input dataframe, the interval of start time and end time
-        return a new dataframe ,inside, the time between start time and end time'''
-    for i in range(len(df)):
+#def check_time(df,start_time,end_time,time_header='time'):
+#    '''input dataframe, the interval of start time and end time
+#        return a new dataframe ,inside, the time between start time and end time'''
+#    for i in range(len(df)):
+#        if type(df[time_header][i])==str:
+#            df[time_header][i]=datetime.strptime(df[time_header][i],'%Y-%m-%d %H:%M:%S')
+#        if start_time<=df[time_header][i]<=end_time:
+#            continue
+#        else:
+#            df=df.drop(i)
+#    df.index=range(len(df))
+#    return df
+def check_time(df,time_header,start_time,end_time):
+    '''keep the type of time is datetime
+    input start time and end time, return the data between start time and end time'''
+    for i in df.index:
         if type(df[time_header][i])==str:
             df[time_header][i]=datetime.strptime(df[time_header][i],'%Y-%m-%d %H:%M:%S')
         if start_time<=df[time_header][i]<=end_time:
             continue
         else:
             df=df.drop(i)
+    df=df.dropna()
     df.index=range(len(df))
     return df
 def diff(tele_df,M_df):
@@ -277,6 +290,16 @@ if a==1:
         df['time']=df.index
         CrmClim_df=df[['time','lat','lon','Clim_T', 'NGDC_H']]
         CrmClim_df.rename(columns={'Clim_T':'temp','NGDC_H':'depth'},inplace=True)
+        
+        if len(tele_df)==0:  
+            print(name+': no valuable data')
+            continue
+        tele_df=check_time(df=tele_df,time_header='time',start_time=start_time,end_time=end_time)
+        Clim_dft=check_time(df=CrmClim_df,time_header='time',start_time=start_time,end_time=end_time)
+        if len(tele_df)==0:  
+            print(name+': no valuable data')
+            continue
+        
         if len(CrmClim_df)==0:
             continue
         tele_list=[name,avg_time(tele_df['time']),np.mean(tele_df['lon']),np.mean(tele_df['lat']),np.mean(tele_df['temp'])]
