@@ -299,7 +299,6 @@ if a==1:
         if len(tele_df)==0:  
             print(name+': no valuable data')
             continue
-        
         if len(CrmClim_df)==0:
             continue
         tele_list=[name,avg_time(tele_df['time']),np.mean(tele_df['lon']),np.mean(tele_df['lat']),np.mean(tele_df['temp'])]
@@ -307,11 +306,11 @@ if a==1:
             CrmClim_diff= diff(tele_df,CrmClim_df)        
             mlist.append(tele_list+CrmClim_diff+[len(CrmClim_df)])
     df=pd.DataFrame(data=mlist,columns=['name','time','lon','lat','obstemp','Stdtemp','temp_diff','climtemp','Clat','Clon','number'])
-    #df=df.dropna()
-    df.index=range(len(df))
-
-    all_boat_map(df,path_save,telemetrystatus_df) 
-#    for i in df.index:
-#        per_boat_map(df.iloc[i],path_save,dpi=300) 
-#        
+    if len(df)!=0:
+        #df=df.dropna()
+        df.index=range(len(df))
+        all_boat_map(df,path_save,telemetrystatus_df) 
+        #    for i in df.index:
+        #        per_boat_map(df.iloc[i],path_save,dpi=300) 
+                
         
