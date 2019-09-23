@@ -130,7 +130,16 @@ def all_boat_map(df,path_save,telemetrystatus_df):
             mark_color='red'
         else:
             mark_color='blue'
-        vessel=telemetrystatus_df['Vessel#'][str(df['name'][i])]
+            
+        try:
+            vessel=telemetrystatus_df['Vessel#'][str(df['name'][i])]
+        except:
+            vesselname=str(df['name'][i])
+            if vesselname=='Finlander I ':
+                vesselname='Finlander_I '
+            else:
+                vesselname=str(df['name'][i]).replace(' ','_') 
+            vessel=telemetrystatus_df['Vessel#'][vesselname]
         
                                           
         popups='<h3> Vessel_'+str(vessel)+'</h3><br><body>Average for '+month(int(start_t.strftime('%m')))+' '+str(start_t.strftime('%d'))\
