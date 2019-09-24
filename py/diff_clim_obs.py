@@ -72,7 +72,8 @@ def avg_time(times):
     start_time=datetime(2018,1,1,0,0,0)
     avg=timedelta(days=0)
     for elem in times:
-        elem=datetime.strptime(elem,'%Y-%m-%d %H:%M:%S')
+        if type(elem)==str:
+            elem=datetime.strptime(elem,'%Y-%m-%d %H:%M:%S')
         avg+=(elem-start_time)
     avg=avg/len(times)
     avg_time=start_time+avg
@@ -295,7 +296,7 @@ if a==1:
             print(name+': no valuable data')
             continue
         tele_df=check_time(df=tele_df,time_header='time',start_time=start_time,end_time=end_time)
-        Clim_dft=check_time(df=CrmClim_df,time_header='time',start_time=start_time,end_time=end_time)
+        CrmClim_df=check_time(df=CrmClim_df,time_header='time',start_time=start_time,end_time=end_time)
         if len(tele_df)==0:  
             print(name+': no valuable data')
             continue
